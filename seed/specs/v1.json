@@ -1,0 +1,519 @@
+{
+  "version": "v1",
+  "info": {
+    "title": "Example Shop API",
+    "description": "Sample API used to demonstrate the documentation portal. Replace it with your own spec.",
+    "baseUrl": "https://api.example.com/v1"
+  },
+  "endpoints": [
+    {
+      "id": "list-users",
+      "group": "Users",
+      "method": "GET",
+      "path": "/users",
+      "summary": "List users",
+      "description": "Returns a paginated list of users, newest first.",
+      "deprecated": false,
+      "headers": [
+        {
+          "name": "Authorization",
+          "type": "string",
+          "required": true,
+          "description": "Bearer access token",
+          "example": "Bearer eyJhbGciOi..."
+        }
+      ],
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "page",
+          "type": "integer",
+          "required": false,
+          "description": "Page number (starts at 1)",
+          "example": "1"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "Items per page (max 100)",
+          "example": "20"
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "required": false,
+          "description": "Search by name or email",
+          "example": "jane"
+        }
+      ],
+      "examples": [
+        {
+          "id": "list-users-200",
+          "name": "First page",
+          "type": "success",
+          "description": "Default pagination.",
+          "request": {
+            "headers": {
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "query": {
+              "page": "1",
+              "limit": "2"
+            }
+          },
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "data": [
+                {
+                  "id": "u_1002",
+                  "name": "Jane Doe",
+                  "email": "jane@example.com",
+                  "role": "admin",
+                  "createdAt": "2026-09-03T10:12:00Z"
+                },
+                {
+                  "id": "u_1001",
+                  "name": "Somchai Jaidee",
+                  "email": "somchai@example.com",
+                  "role": "member",
+                  "createdAt": "2026-09-01T08:30:00Z"
+                }
+              ],
+              "page": 1,
+              "limit": 2,
+              "total": 2
+            }
+          }
+        },
+        {
+          "id": "list-users-401",
+          "name": "Missing token",
+          "type": "fail",
+          "description": "The Authorization header was not sent.",
+          "request": {
+            "query": {
+              "page": "1"
+            }
+          },
+          "response": {
+            "status": 401,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": {
+                "code": "UNAUTHORIZED",
+                "message": "Authentication token is missing or invalid."
+              }
+            }
+          }
+        }
+      ],
+      "createdAt": "2026-10-14T00:00:00.000Z",
+      "updatedAt": "2026-10-14T00:00:00.000Z",
+      "updatedBy": "seed",
+      "revision": 1
+    },
+    {
+      "id": "get-user",
+      "group": "Users",
+      "method": "GET",
+      "path": "/users/{id}",
+      "summary": "Get a user by ID",
+      "description": "Returns a single user.",
+      "deprecated": false,
+      "headers": [
+        {
+          "name": "Authorization",
+          "type": "string",
+          "required": true,
+          "description": "Bearer access token",
+          "example": "Bearer eyJhbGciOi..."
+        }
+      ],
+      "pathParams": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "User ID",
+          "example": "u_1001"
+        }
+      ],
+      "queryParams": [],
+      "examples": [
+        {
+          "id": "get-user-200",
+          "name": "User found",
+          "type": "success",
+          "request": {
+            "headers": {
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "pathParams": {
+              "id": "u_1001"
+            }
+          },
+          "response": {
+            "status": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "id": "u_1001",
+              "name": "Somchai Jaidee",
+              "email": "somchai@example.com",
+              "role": "member",
+              "createdAt": "2026-09-01T08:30:00Z"
+            }
+          }
+        },
+        {
+          "id": "get-user-404",
+          "name": "User not found",
+          "type": "fail",
+          "description": "No user exists with the given ID.",
+          "request": {
+            "headers": {
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "pathParams": {
+              "id": "u_9999"
+            }
+          },
+          "response": {
+            "status": 404,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": {
+                "code": "USER_NOT_FOUND",
+                "message": "User u_9999 does not exist."
+              }
+            }
+          }
+        }
+      ],
+      "createdAt": "2026-10-14T00:00:00.000Z",
+      "updatedAt": "2026-10-14T00:00:00.000Z",
+      "updatedBy": "seed",
+      "revision": 1
+    },
+    {
+      "id": "create-order",
+      "group": "Orders",
+      "method": "POST",
+      "path": "/orders",
+      "summary": "Create an order",
+      "description": "Creates a new order for the authenticated user. Prices are calculated by the server.",
+      "deprecated": false,
+      "headers": [
+        {
+          "name": "Authorization",
+          "type": "string",
+          "required": true,
+          "description": "Bearer access token",
+          "example": "Bearer eyJhbGciOi..."
+        },
+        {
+          "name": "Idempotency-Key",
+          "type": "string",
+          "required": false,
+          "description": "Prevents duplicate orders when retrying",
+          "example": "7b1f0c2e-order-1"
+        }
+      ],
+      "pathParams": [],
+      "queryParams": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "required": true,
+        "schemaMode": "fields",
+        "fields": [
+          {
+            "name": "items",
+            "type": "array",
+            "required": true,
+            "description": "Products to order (at least one)",
+            "children": [
+              {
+                "name": "productId",
+                "type": "string",
+                "required": true,
+                "description": "Product ID",
+                "example": "p_200"
+              },
+              {
+                "name": "quantity",
+                "type": "integer",
+                "required": true,
+                "description": "Quantity, 1-99",
+                "example": "2"
+              }
+            ]
+          },
+          {
+            "name": "shippingAddress",
+            "type": "object",
+            "required": true,
+            "description": "Delivery address",
+            "children": [
+              {
+                "name": "line1",
+                "type": "string",
+                "required": true,
+                "example": "99 Sukhumvit Rd"
+              },
+              {
+                "name": "city",
+                "type": "string",
+                "required": true,
+                "example": "Bangkok"
+              },
+              {
+                "name": "postalCode",
+                "type": "string",
+                "required": true,
+                "example": "10110"
+              }
+            ]
+          },
+          {
+            "name": "note",
+            "type": "string",
+            "required": false,
+            "description": "Note for the seller",
+            "example": "Leave at the door"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "id": "create-order-201",
+          "name": "Order created",
+          "type": "success",
+          "request": {
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer eyJhbGciOi...",
+              "Idempotency-Key": "7b1f0c2e-order-1"
+            },
+            "body": {
+              "items": [
+                {
+                  "productId": "p_200",
+                  "quantity": 2
+                }
+              ],
+              "shippingAddress": {
+                "line1": "99 Sukhumvit Rd",
+                "city": "Bangkok",
+                "postalCode": "10110"
+              }
+            }
+          },
+          "response": {
+            "status": 201,
+            "headers": {
+              "Content-Type": "application/json",
+              "Location": "/v1/orders/o_5001"
+            },
+            "body": {
+              "id": "o_5001",
+              "status": "pending",
+              "items": [
+                {
+                  "productId": "p_200",
+                  "quantity": 2,
+                  "unitPrice": 450
+                }
+              ],
+              "total": 900,
+              "currency": "THB",
+              "createdAt": "2026-10-14T09:00:00Z"
+            }
+          }
+        },
+        {
+          "id": "create-order-400",
+          "name": "Malformed JSON",
+          "type": "fail",
+          "description": "The request body is not valid JSON.",
+          "request": {
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "body": "{ \"items\": [ "
+          },
+          "response": {
+            "status": 400,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": {
+                "code": "BAD_REQUEST",
+                "message": "Request body must be valid JSON."
+              }
+            }
+          }
+        },
+        {
+          "id": "create-order-422",
+          "name": "Validation failed",
+          "type": "fail",
+          "description": "The body is valid JSON but breaks business rules.",
+          "request": {
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "body": {
+              "items": [
+                {
+                  "productId": "p_200",
+                  "quantity": 0
+                }
+              ]
+            }
+          },
+          "response": {
+            "status": 422,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": {
+                "code": "VALIDATION_FAILED",
+                "message": "Some fields are invalid.",
+                "fields": [
+                  {
+                    "field": "items[0].quantity",
+                    "message": "Must be between 1 and 99."
+                  },
+                  {
+                    "field": "shippingAddress",
+                    "message": "Is required."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "createdAt": "2026-10-14T00:00:00.000Z",
+      "updatedAt": "2026-10-14T00:00:00.000Z",
+      "updatedBy": "seed",
+      "revision": 1
+    },
+    {
+      "id": "delete-order",
+      "group": "Orders",
+      "method": "DELETE",
+      "path": "/orders/{id}",
+      "summary": "Cancel an order",
+      "description": "Cancels an order that has not shipped yet.",
+      "deprecated": false,
+      "headers": [
+        {
+          "name": "Authorization",
+          "type": "string",
+          "required": true,
+          "description": "Bearer access token",
+          "example": "Bearer eyJhbGciOi..."
+        }
+      ],
+      "pathParams": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "Order ID",
+          "example": "o_5001"
+        }
+      ],
+      "queryParams": [],
+      "examples": [
+        {
+          "id": "delete-order-204",
+          "name": "Order cancelled",
+          "type": "success",
+          "request": {
+            "headers": {
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "pathParams": {
+              "id": "o_5001"
+            }
+          },
+          "response": {
+            "status": 204
+          }
+        },
+        {
+          "id": "delete-order-404",
+          "name": "Order not found",
+          "type": "fail",
+          "request": {
+            "headers": {
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "pathParams": {
+              "id": "o_0000"
+            }
+          },
+          "response": {
+            "status": 404,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": {
+                "code": "ORDER_NOT_FOUND",
+                "message": "Order o_0000 does not exist."
+              }
+            }
+          }
+        },
+        {
+          "id": "delete-order-500",
+          "name": "Server error",
+          "type": "fail",
+          "description": "Unexpected failure; safe to retry later.",
+          "request": {
+            "headers": {
+              "Authorization": "Bearer eyJhbGciOi..."
+            },
+            "pathParams": {
+              "id": "o_5001"
+            }
+          },
+          "response": {
+            "status": 500,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "Something went wrong. Please try again.",
+                "requestId": "req_8f2a"
+              }
+            }
+          }
+        }
+      ],
+      "createdAt": "2026-10-14T00:00:00.000Z",
+      "updatedAt": "2026-10-14T00:00:00.000Z",
+      "updatedBy": "seed",
+      "revision": 1
+    }
+  ]
+}
